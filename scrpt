@@ -1,0 +1,64 @@
+// Function to add a new recipe
+async function addRecipe(event) {
+    event.preventDefault();
+
+    const formData = new FormData(document.getElementById('recipe-form'));
+    const response = await fetch('/add-recipe', {
+        method: 'POST',
+        body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        alert('Recipe added successfully!');
+        displayRecipe(data.recipe);
+    } else {
+        alert('Failed to add recipe');
+    }
+}
+
+// Function to display the newly added recipe
+function displayRecipe(recipe) {
+    const recipeContainer = document.getElementById('recipes-container');
+
+    const recipeElement = document.createElement('div');
+    recipeElement.classList.add('recipe');
+
+    recipeElement.innerHTML = `
+        <h3>${recipe.recipeName}</h3>
+        <p><strong>Ingredients:</strong><br>${recipe.ingredients}</p>
+        <p><strong>Steps:</strong><br>${recipe.steps}</p>
+        ${recipe.imagePath ? `<img src="${recipe.imagePath}" alt="${recipe.recipeName}" />` : ''}
+    `;
+
+    recipeContainer.appendChild(recipeElement);
+}
+
+// Search functionality
+function searchRecipes() {
+    const searchTerm = document.getElementById('search').value.toLowerCase();
+    const recipeElements = document.querySelectorAll('.recipe');
+
+    recipeElements.forEach(recipe => {
+        const recipeName = recipe.querySelector('h3').textContent.toLowerCase();
+        if (recipeName.includes(searchTerm)) {
+            recipe.style.display = 'block';
+        } else {
+            recipe.style.display = 'none';
+        }
+    });
+}
+
+// Load existing recipes on page load
+async function loadRecipes() {
+    const response = await fetch('/recipes');
+    const data = await response.json();
+    
+    data.forEach(recipe => {
+        displayRecipe(recipe);
+    });
+}
+
+// Initialize the page with existing recipes
+window.onload = loadRecipes;
